@@ -1,0 +1,9 @@
+  - job_name: '<%= @job_name %>'
+    static_configs:
+      - targets: [ <%= @targets.map{ |val| "\"#{val}\"" }.join(',') %> ]
+        <%- if @labels.any? -%>
+        labels:
+          <%- @labels.each do |key, value| -%>
+          <%= key %>: '<%= value %>'
+          <%- end -%>
+        <%- end -%>

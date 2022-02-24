@@ -1,0 +1,44 @@
+global:
+  resolve_timeout: 5m
+
+  smtp_smarthost: '<%= @smtp_smarthost %>'
+  smtp_from: '<%= @smtp_from %>'
+  smtp_require_tls: <%= @smtp_require_tls %>
+  smtp_hello: '<%= @smtp_hello %>'
+  <%- if defined?(@smtp_auth_username) -%>
+  smtp_auth_username: '<%= @smtp_auth_username %>'
+  <%- end -%>
+  <%- if defined?(@smtp_auth_password) -%>
+  smtp_auth_password: '<%= @smtp_auth_password %>'
+  <%- end -%>
+
+# The root route with all parameters, which are inherited by the child
+# routes if they are not overwritten.
+route:
+  receiver: 'default-receiver'
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  group_by: ['instance', 'alert']
+
+  # All alerts that do not match the following child routes
+  # will remain at the root node and be dispatched to 'default-receiver'.
+  routes:
+  # All alerts with service=mysql or service=cassandra
+  # are dispatched to the database pager.
+  - receiver: 'database-pager'
+    group_wait: 10s
+    match_re:
+      service: mysql|cassandra
+  # All alerts with the team=frontend label match this sub-route.
+  # They are grouped by product and environment rather than cluster
+  # and alertname.
+  - receiver: 'frontend-pager'
+    group_by: [product, environment]
+    match:
+      team: frontend
+
+receivers:
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'user@domain.com'

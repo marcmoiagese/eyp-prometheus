@@ -1,0 +1,1 @@
+class { 'prometheus::exporter::haproxy': }
